@@ -8,7 +8,7 @@ import pytest
 from src.modules.app_logger.app_logger import get_logger
 from src.modules.application.application import ApplicationContext
 from src.modules.config.config import get_config
-from src.modules.usecase.signup_verify_identity import repository
+from impl.backend.src.modules.usecase.signup.signup_verify_identity import repository
 
 
 SEND_TO_EMAIL = os.environ["TEST_SENDER_EMAIL"]

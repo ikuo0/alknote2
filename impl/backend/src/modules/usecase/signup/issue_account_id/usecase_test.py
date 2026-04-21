@@ -11,13 +11,13 @@ from src.modules.app_logger.app_logger import get_logger
 from src.modules.application.application import ApplicationContext
 from src.modules.config.config import get_config, Config
 from src.modules.helper.helper import unixtime_ms, uuid_hex, hash_string
-from src.modules.usecase.issue_account_id.model import (
+from impl.backend.src.modules.usecase.signup.issue_account_id.model import (
     InvalidTokenError,
     TooManyAttemptsError,
     TokenExpiredError,
     InvalidPasswordError,
 )
-from src.modules.usecase.issue_account_id import usecase
+from impl.backend.src.modules.usecase.signup.issue_account_id import usecase
 
 EMAIL_RECIPIENT = os.environ["TEST_SENDER_EMAIL"]
 

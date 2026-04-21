@@ -60,6 +60,7 @@
   - Type: Enum
   - Values
     - "owner": 投稿に関する全ての権限、トークン発行等全ての権限を持つ
+    - "expired_owner": post権限以外は全てを持つ（期限切れのオーナートークンに付与する権限）
     - "manager": 投稿に関する全ての権限、トークン発行権限を持つ（editor, viewer を増やせる1）
     - "editor": 投稿に関する全ての権限
     - "viewer": 閲覧のみ

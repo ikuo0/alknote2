@@ -1,6 +1,6 @@
 from src.modules.application.application import ApplicationContext
-from src.modules.usecase.signup_verify_identity.model import VerifyTokenData
-from src.modules.usecase.signup_verify_identity import service
+from impl.backend.src.modules.usecase.signup.signup_verify_identity.model import VerifyTokenData
+from impl.backend.src.modules.usecase.signup.signup_verify_identity import service
 
 
 def execute(ctx: ApplicationContext, email: str, password: str) -> VerifyTokenData:

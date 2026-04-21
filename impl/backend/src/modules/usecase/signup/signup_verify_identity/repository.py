@@ -5,7 +5,7 @@ from email.mime.multipart import MIMEMultipart
 import boto3
 
 from src.modules.application.application import ApplicationContext
-from src.modules.usecase.signup_verify_identity.model import VerifyTokenData
+from impl.backend.src.modules.usecase.signup.signup_verify_identity.model import VerifyTokenData
 
 
 def save_verify_token(ctx: ApplicationContext, data: VerifyTokenData) -> None:

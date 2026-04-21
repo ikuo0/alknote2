@@ -4,15 +4,15 @@ from fastapi import APIRouter, Request
 from src.app_moduels.http.factory import request_factory, response_factory
 from src.modules.application.process import process_scope
 from src.modules.factory.factory import create_app_context, file_to_process_identity
-from src.modules.usecase.signup_verify_identity.model import (
+from impl.backend.src.modules.usecase.signup.signup_verify_identity.model import (
     InvalidEmailError,
     InvalidPasswordError as SignupInvalidPasswordError,
 )
-from src.modules.usecase.signup_verify_identity.usecase import \
+from impl.backend.src.modules.usecase.signup.signup_verify_identity.usecase import \
     execute as signup_verify_identity_usecase
-from src.modules.usecase.issue_account_id.model import (
+from impl.backend.src.modules.usecase.signup.issue_account_id.model import (
     InvalidTokenError, TooManyAttemptsError, TokenExpiredError, InvalidPasswordError as IssueAccountInvalidPasswordError, DatabaseError)
-from src.modules.usecase.issue_account_id.usecase import \
+from impl.backend.src.modules.usecase.signup.issue_account_id.usecase import \
     execute as issue_account_id_usecase
 
 router = APIRouter()

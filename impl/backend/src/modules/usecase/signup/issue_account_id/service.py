@@ -3,7 +3,7 @@ import traceback
 
 from src.modules.application.application import ApplicationContext
 from src.modules.helper.helper import unixtime_ms, uuid_hex, hash_string, verify_hash
-from src.modules.usecase.issue_account_id.model import (
+from impl.backend.src.modules.usecase.signup.issue_account_id.model import (
     InvalidTokenError,
     TooManyAttemptsError,
     TokenExpiredError,
@@ -12,7 +12,7 @@ from src.modules.usecase.issue_account_id.model import (
     StoredVerifyTokenData,
     IssuedAccountData,
 )
-from src.modules.usecase.issue_account_id import repository
+from impl.backend.src.modules.usecase.signup.issue_account_id import repository
 
 
 # ─────────────────────────────────────────────

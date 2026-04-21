@@ -3,12 +3,12 @@ import traceback
 
 from src.modules.application.application import ApplicationContext
 from src.modules.helper.helper import unixtime_ms, uuid_hex, hash_string
-from src.modules.usecase.signup_verify_identity.model import (
+from impl.backend.src.modules.usecase.signup.signup_verify_identity.model import (
     InvalidEmailError,
     InvalidPasswordError,
     VerifyTokenData,
 )
-from src.modules.usecase.signup_verify_identity import repository
+from impl.backend.src.modules.usecase.signup.signup_verify_identity import repository
 
 _EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
 

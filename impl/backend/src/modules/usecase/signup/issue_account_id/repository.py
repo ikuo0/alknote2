@@ -5,7 +5,7 @@ from email.mime.multipart import MIMEMultipart
 import boto3
 
 from src.modules.application.application import ApplicationContext
-from src.modules.usecase.issue_account_id.model import StoredVerifyTokenData, IssuedAccountData
+from impl.backend.src.modules.usecase.signup.issue_account_id.model import StoredVerifyTokenData, IssuedAccountData
 
 
 def _make_ddb_client(ctx: ApplicationContext):

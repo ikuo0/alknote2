@@ -1,6 +1,6 @@
 from src.modules.application.application import ApplicationContext
-from src.modules.usecase.issue_account_id.model import IssuedAccountData
-from src.modules.usecase.issue_account_id import service
+from impl.backend.src.modules.usecase.signup.issue_account_id.model import IssuedAccountData
+from impl.backend.src.modules.usecase.signup.issue_account_id import service
 
 
 def execute(ctx: ApplicationContext, verify_token: str, password: str) -> IssuedAccountData:

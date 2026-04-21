@@ -24,7 +24,7 @@ class Config:
     # 課金すると利用期間が32日延長される、課金した瞬間からではなく expiry_utms に加算される点に注意
     BILLING_EXTENSION_UTMS: int = field(default_factory=lambda: _days_to_utms(32))
     INITIAL_EXTENSION_UTMS: int = field(default_factory=lambda: _days_to_utms(7))
-    VIEW_ONLY_GRACE_UTMS: int = field(default_factory=lambda: _days_to_utms(7)) # expiry_utms + VIEW_ONLY_GRACE_UTMS までは閲覧、エクスポートだけ行える猶予期間
+    BILLING_GRACE_UTMS: int = field(default_factory=lambda: _days_to_utms(7)) # expiry_utms + BILLING_GRACE_UTMS までは閲覧、エクスポートだけ行える猶予期間
     LIFE_TIME_UTMS: int = field(default_factory=lambda: _days_to_utms(40))
     REVERIFY_INTERVAL_UTMS: int = field(default_factory=lambda: _days_to_utms(7)) # 本人確認を1週間に1回求めるためのインターバル
 

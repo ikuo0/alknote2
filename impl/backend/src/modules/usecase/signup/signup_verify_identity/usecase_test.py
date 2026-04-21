@@ -10,11 +10,11 @@ import pytest
 from src.modules.app_logger.app_logger import get_logger
 from src.modules.application.application import ApplicationContext
 from src.modules.config.config import get_config, Config
-from src.modules.usecase.signup_verify_identity.model import (
+from impl.backend.src.modules.usecase.signup.signup_verify_identity.model import (
     InvalidEmailError,
     InvalidPasswordError,
 )
-from src.modules.usecase.signup_verify_identity import usecase
+from impl.backend.src.modules.usecase.signup.signup_verify_identity import usecase
 
 # ─────────────────────────────────────────────
 # ヘルパー

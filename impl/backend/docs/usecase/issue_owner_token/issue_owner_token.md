@@ -1,21 +1,12 @@
 # トークン発行-オーナートークンの発行
 - 概要
+  - account_id 認証をする
   - オーナーアクセストークンを発行する
-    - オーナーアクセストークンは期限内であれば閲覧、編集、全削除、共有等全ての権限を持つ
-  - account_id 認証により発行されるトークンは次の種類がある
-    - 期限内のトークン: 全ての権限を持つトークン
-    - 課金期限切れのトークン: post権限以外は全てを持つトークン
-  - オーナーアクセストークンは発行から一定期間有効である
-  - account_id 認証は一定期間経過しているとマジックリンクによる検証を必要とする
-    - その際は raise "ReverificationRequiredError" し、クライアントで処理を切り替え、個人検証によるオーナーアクセストークン処理を実施する
 - 処理
   - ddbAccount より account_id をキーにレコードを取得する
-    - データが存在しない場合、tracebackログを残し raise "InvalidAccountError" する
-    - expiry_utms 期限内であれば、全ての権限を持つトークンを発行
-    - expiry_utms + Config.VIEW_ONLY_GRACE_UTMS 期限内であれば、post権限以外は全てを持つトークンを発行
-    - expiry_utms + Config.VIEW_ONLY_GRACE_UTMS 期限を過ぎている場合は raise "AccountUnavailableError" する
+    - 期限切れ等を確認して、発行可能か確認する
   - access_token を発行する
-  - サインインURLの記載されたメールを送信する
+  - サインインURL(access_token付き)の記載されたメールを送信する
 
 # 作成条件:
 - リソース定義は impl/backend/docs/resource_design.md の内容に従う
@@ -62,12 +53,12 @@
   - expiry_utms: int, required
   - reverify_due_utms: int, required
 - 処理
-  - expiry_utms 期限内であれば、全ての権限を持つトークンを発行
-  - expiry_utms + Config.VIEW_ONLY_GRACE_UTMS 期限内であれば、post権限以外は全てを持つトークンを発行
+  - expiry_utms 期限内であれば、"owner" 権限を持つトークンを発行する
+  - expiry_utms + Config.BILLING_GRACE_UTMS 期限内であれば、"expired_owner" 権限を持つトークンを発行する
   - reverify_due_utms 期限を超えているか確認する
     - 超えている場合、tracebackログを残し raise "ReverificationRequiredError" する
     - 3以上の場合、tracebackログを残し raise "TooManyAttemptsError" する
-  - expiry_utms + Config.VIEW_ONLY_GRACE_UTMS 期限を超えている場合は raise "AccountUnavailableError" する
+  - expiry_utms + Config.BILLING_GRACE_UTMS 期限を超えている場合は raise "AccountUnavailableError" する
   - access_token を発行する
     - access_token = "atoken.{unixtime(ms)}.{uuid4}"
   - 出力用の値を作成する
