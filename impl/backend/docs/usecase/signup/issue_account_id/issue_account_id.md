@@ -13,10 +13,8 @@
 
 # 作成条件:
 - リソース定義は impl/backend/docs/resource_design.md の内容に従う
-- impl/backend/src/modules/usecase/signup/issue_account_id/usecase.py として作成
-- impl/backend/src/modules/usecase/signup/issue_account_id/ 以下にソースを収める、上層ディレクトリを参照しない
+- 作業ディレクトリ: impl/backend/src/modules/usecase/signup/issue_account_id/
 - コードファイル構成は以下に従い、追加ファイルは作成しない
-- コードルール:
   - 主処理: usecase.py → service.py の機能を並べて呼ぶだけ
   - 各機能: service.py
   - データアクセス: repository.py
@@ -65,7 +63,7 @@
     - instance_id: "iid.{unixtime(ms)}.{uuid4}"
     - email: stored_email
     - attempts: stored_attempts
-    - email_hash: stored_email をハッシュ化した値
+    - email: stored_email
     - create_utms: 現在のUNIXTIME(ms)
     - billing_utms: 現在のUNIXTIME(ms)
     - expiry_utms: 現在のUNIXTIME(ms) + Config.INITIAL_EXTENSION_UTMS
@@ -80,7 +78,6 @@
     - account_id: string, required
     - instance_id: string, required
     - email: string, required
-    - email_hash: string, required
     - create_utms: int, required
     - billing_utms: int, required
     - expiry_utms: int, required

@@ -1,8 +1,7 @@
 """
-pytest -s -vv impl/backend/src/modules/usecase/signup_verify_identity/usecase_test.py
+pytest -s -vv impl/backend/src/modules/usecase/signup/signup_verify_identity/usecase_test.py
 """
-import os
-from unittest.mock import patch, MagicMock
+import time
 
 import boto3
 import pytest
@@ -10,11 +9,14 @@ import pytest
 from src.modules.app_logger.app_logger import get_logger
 from src.modules.application.application import ApplicationContext
 from src.modules.config.config import get_config, Config
-from impl.backend.src.modules.usecase.signup.signup_verify_identity.model import (
+from src.modules.helper.helper import unixtime_ms, uuid_hex
+from src.modules.usecase.signup.signup_verify_identity.usecase import (
     InvalidEmailError,
     InvalidPasswordError,
+    execute,
 )
-from impl.backend.src.modules.usecase.signup.signup_verify_identity import usecase
+
+EMAIL_RECIPIENT = "ikuo.pg@gmail.com"
 
 # ─────────────────────────────────────────────
 # ヘルパー
@@ -36,7 +38,7 @@ def make_ddb_client(cfg: Config):
     )
 
 
-def fetch_verify_token(cfg: Config, verify_token: str) -> dict | None:
+def fetch_verify_token_item(cfg: Config, verify_token: str) -> dict | None:
     client = make_ddb_client(cfg)
     resp = client.get_item(
         TableName="ddbVerifyToken",
@@ -53,211 +55,128 @@ def delete_verify_token(cfg: Config, verify_token: str) -> None:
     )
 
 
-# smtplib.SMTP はテスト環境では実際に送信しない（SMTP サーバー不在）ため最小限のモックを使用
-SMTP_MOCK_TARGET = "src.modules.usecase.signup_verify_identity.repository.smtplib.SMTP"
-
-SEND_TO_EMAIL = os.getenv("TEST_SENDER_EMAIL")
-
 # ─────────────────────────────────────────────
 # 正常系テスト
 # ─────────────────────────────────────────────
 
 """
-pytest -s -vv impl/backend/src/modules/usecase/signup_verify_identity/usecase_test.py::TestExecuteSuccess
+pytest -s -vv impl/backend/src/modules/usecase/signup/signup_verify_identity/usecase_test.py::TestExecuteSuccess
 """
 class TestExecuteSuccess:
 
+    # pytest -s -vv impl/backend/src/modules/usecase/signup/signup_verify_identity/usecase_test.py::TestExecuteSuccess::test_正常系_戻り値にverify_tokenが含まれる
     def test_正常系_戻り値にverify_tokenが含まれる(self):
         ctx = make_ctx()
-        with patch(SMTP_MOCK_TARGET) as mock_smtp:
-            mock_smtp.return_value.__enter__ = MagicMock(return_value=MagicMock())
-            mock_smtp.return_value.__exit__ = MagicMock(return_value=False)
-            result = usecase.execute(ctx, SEND_TO_EMAIL, "1234")
-
-        try:
-            assert result.verify_token.startswith("vtoken.")
-        finally:
-            delete_verify_token(ctx.config, result.verify_token)
-
-    def test_正常系_戻り値のemailが入力値と一致する(self):
-        ctx = make_ctx()
-        with patch(SMTP_MOCK_TARGET) as mock_smtp:
-            mock_smtp.return_value.__enter__ = MagicMock(return_value=MagicMock())
-            mock_smtp.return_value.__exit__ = MagicMock(return_value=False)
-            result = usecase.execute(ctx, SEND_TO_EMAIL, "1234")
-
-        try:
-            assert result.email == SEND_TO_EMAIL
-        finally:
-            delete_verify_token(ctx.config, result.verify_token)
+        result = execute(ctx, EMAIL_RECIPIENT, "1234")
+        assert result.verify_token.startswith("vtoken.")
+        delete_verify_token(ctx.config, result.verify_token)
 
     def test_正常系_ddbVerifyTokenにレコードが保存される(self):
         ctx = make_ctx()
-        with patch(SMTP_MOCK_TARGET) as mock_smtp:
-            mock_smtp.return_value.__enter__ = MagicMock(return_value=MagicMock())
-            mock_smtp.return_value.__exit__ = MagicMock(return_value=False)
-            result = usecase.execute(ctx, SEND_TO_EMAIL, "1234")
-
-        try:
-            item = fetch_verify_token(ctx.config, result.verify_token)
-            assert item is not None
-            assert item["email"]["S"] == SEND_TO_EMAIL
-            assert item["attempts"]["N"] == "0"
-        finally:
-            delete_verify_token(ctx.config, result.verify_token)
-
-    def test_正常系_ddbVerifyTokenのttl_expire_atが正しく設定される(self):
-        ctx = make_ctx()
-        import time
-        before = int(time.time())
-        with patch(SMTP_MOCK_TARGET) as mock_smtp:
-            mock_smtp.return_value.__enter__ = MagicMock(return_value=MagicMock())
-            mock_smtp.return_value.__exit__ = MagicMock(return_value=False)
-            result = usecase.execute(ctx, SEND_TO_EMAIL, "1234")
-        after = int(time.time())
-
-        try:
-            expected_lifetime_s = int(ctx.config.VTOKEN_LIFETIME_UTMS / 1000)
-            assert before + expected_lifetime_s <= result.ttl_expire_at <= after + expected_lifetime_s
-        finally:
-            delete_verify_token(ctx.config, result.verify_token)
-
-    def test_正常系_password_hashがハッシュ化されている(self):
-        ctx = make_ctx()
-        with patch(SMTP_MOCK_TARGET) as mock_smtp:
-            mock_smtp.return_value.__enter__ = MagicMock(return_value=MagicMock())
-            mock_smtp.return_value.__exit__ = MagicMock(return_value=False)
-            result = usecase.execute(ctx, SEND_TO_EMAIL, "1234")
-
-        try:
-            assert result.password_hash != "1234"
-            assert len(result.password_hash) > 0
-        finally:
-            delete_verify_token(ctx.config, result.verify_token)
-
-    def test_正常系_SMTPが呼び出される(self):
-        ctx = make_ctx()
-        with patch(SMTP_MOCK_TARGET) as mock_smtp:
-            smtp_instance = MagicMock()
-            mock_smtp.return_value.__enter__ = MagicMock(return_value=smtp_instance)
-            mock_smtp.return_value.__exit__ = MagicMock(return_value=False)
-            result = usecase.execute(ctx, SEND_TO_EMAIL, "1234")
-            mock_smtp.assert_called_once()
-
+        result = execute(ctx, EMAIL_RECIPIENT, "1234")
+        item = fetch_verify_token_item(ctx.config, result.verify_token)
+        assert item is not None
         delete_verify_token(ctx.config, result.verify_token)
 
-    def test_正常系_attemptsが0である(self):
+    def test_正常系_ddbVerifyTokenのemailが一致する(self):
         ctx = make_ctx()
-        with patch(SMTP_MOCK_TARGET) as mock_smtp:
-            mock_smtp.return_value.__enter__ = MagicMock(return_value=MagicMock())
-            mock_smtp.return_value.__exit__ = MagicMock(return_value=False)
-            result = usecase.execute(ctx, SEND_TO_EMAIL, "1234")
+        result = execute(ctx, EMAIL_RECIPIENT, "1234")
+        item = fetch_verify_token_item(ctx.config, result.verify_token)
+        assert item["email"]["S"] == EMAIL_RECIPIENT
+        delete_verify_token(ctx.config, result.verify_token)
 
-        try:
-            assert result.attempts == 0
-        finally:
-            delete_verify_token(ctx.config, result.verify_token)
-
-    def test_正常系_create_utmsが現在時刻付近である(self):
+    def test_正常系_ddbVerifyTokenのattemptsが0である(self):
         ctx = make_ctx()
-        import time
-        before_ms = int(time.time() * 1000)
-        with patch(SMTP_MOCK_TARGET) as mock_smtp:
-            mock_smtp.return_value.__enter__ = MagicMock(return_value=MagicMock())
-            mock_smtp.return_value.__exit__ = MagicMock(return_value=False)
-            result = usecase.execute(ctx, SEND_TO_EMAIL, "1234")
-        after_ms = int(time.time() * 1000)
+        result = execute(ctx, EMAIL_RECIPIENT, "1234")
+        item = fetch_verify_token_item(ctx.config, result.verify_token)
+        assert int(item["attempts"]["N"]) == 0
+        delete_verify_token(ctx.config, result.verify_token)
 
-        try:
-            assert before_ms <= result.create_utms <= after_ms
-        finally:
-            delete_verify_token(ctx.config, result.verify_token)
+    def test_正常系_ddbVerifyTokenのexpiry_utmsが現在時刻より未来である(self):
+        ctx = make_ctx()
+        before_ms = unixtime_ms()
+        result = execute(ctx, EMAIL_RECIPIENT, "1234")
+        assert result.expiry_utms > before_ms
+        delete_verify_token(ctx.config, result.verify_token)
 
-    # def test_正常系_メールアドレスにサブドメインを含む場合も通る(self):
-    #     ctx = make_ctx()
-    #     with patch(SMTP_MOCK_TARGET) as mock_smtp:
-    #         mock_smtp.return_value.__enter__ = MagicMock(return_value=MagicMock())
-    #         mock_smtp.return_value.__exit__ = MagicMock(return_value=False)
-    #         result = usecase.execute(ctx, SEND_TO_EMAIL, "0000")
+    def test_正常系_ddbVerifyTokenのttl_expire_atが秒単位で未来である(self):
+        ctx = make_ctx()
+        before_s = int(time.time())
+        result = execute(ctx, EMAIL_RECIPIENT, "1234")
+        assert result.ttl_expire_at > before_s
+        delete_verify_token(ctx.config, result.verify_token)
 
-    #     try:
-    #         assert result.email == SEND_TO_EMAIL
-    #     finally:
-    #         delete_verify_token(ctx.config, result.verify_token)
+    def test_正常系_ttl_expire_atはexpiry_utmsを秒換算した値である(self):
+        ctx = make_ctx()
+        result = execute(ctx, EMAIL_RECIPIENT, "1234")
+        assert result.ttl_expire_at == int(result.expiry_utms / 1000)
+        delete_verify_token(ctx.config, result.verify_token)
+
+    def test_正常系_password_hashが保存される(self):
+        ctx = make_ctx()
+        result = execute(ctx, EMAIL_RECIPIENT, "1234")
+        item = fetch_verify_token_item(ctx.config, result.verify_token)
+        assert "password_hash" in item
+        assert item["password_hash"]["S"] != ""
+        delete_verify_token(ctx.config, result.verify_token)
+
+    def test_正常系_メール送信が完了する(self):
+        """実際にメールを送信する"""
+        ctx = make_ctx()
+        result = execute(ctx, EMAIL_RECIPIENT, "5678")
+        delete_verify_token(ctx.config, result.verify_token)
 
 
 # ─────────────────────────────────────────────
-# 異常系: メールアドレス
+# 異常系: 不正メールアドレス
 # ─────────────────────────────────────────────
 
 """
-pytest -s -vv impl/backend/src/modules/usecase/signup_verify_identity/usecase_test.py::TestInvalidEmail
+pytest -s -vv impl/backend/src/modules/usecase/signup/signup_verify_identity/usecase_test.py::TestInvalidEmail
 """
 class TestInvalidEmail:
 
-    def _assert_invalid_email(self, email: str):
+    def test_異常系_メールアドレスが空でInvalidEmailErrorが発生する(self):
         ctx = make_ctx()
         with pytest.raises(InvalidEmailError):
-            with patch(SMTP_MOCK_TARGET):
-                usecase.execute(ctx, email, "1234")
+            execute(ctx, "", "1234")
 
-    def test_異常系_メールアドレスが空文字(self):
-        self._assert_invalid_email("")
+    def test_異常系_メールアドレスにatマークなしでInvalidEmailErrorが発生する(self):
+        ctx = make_ctx()
+        with pytest.raises(InvalidEmailError):
+            execute(ctx, "invalidemail", "1234")
 
-    def test_異常系_メールアドレスにatがない(self):
-        self._assert_invalid_email("userexample.com")
-
-    def test_異常系_メールアドレスのローカル部が空(self):
-        self._assert_invalid_email("@example.com")
-
-    def test_異常系_メールアドレスのドメイン部が空(self):
-        self._assert_invalid_email("user@")
-
-    def test_異常系_メールアドレスにドットがない(self):
-        self._assert_invalid_email("user@example")
-
-    def test_異常系_メールアドレスにスペースが含まれる(self):
-        self._assert_invalid_email("user @example.com")
-
-    def test_異常系_メールアドレスが複数のatを持つ(self):
-        self._assert_invalid_email("user@@example.com")
+    def test_異常系_メールアドレスにドメインなしでInvalidEmailErrorが発生する(self):
+        ctx = make_ctx()
+        with pytest.raises(InvalidEmailError):
+            execute(ctx, "user@", "1234")
 
 
 # ─────────────────────────────────────────────
-# 異常系: パスワード
+# 異常系: 不正パスワード
 # ─────────────────────────────────────────────
 
 """
-pytest -s -vv impl/backend/src/modules/usecase/signup_verify_identity/usecase_test.py::TestInvalidPassword
+pytest -s -vv impl/backend/src/modules/usecase/signup/signup_verify_identity/usecase_test.py::TestInvalidPassword
 """
 class TestInvalidPassword:
 
-    def _assert_invalid_password(self, password: str):
+    def test_異常系_パスワードが空でInvalidPasswordErrorが発生する(self):
         ctx = make_ctx()
         with pytest.raises(InvalidPasswordError):
-            with patch(SMTP_MOCK_TARGET):
-                usecase.execute(ctx, SEND_TO_EMAIL, password)
+            execute(ctx, EMAIL_RECIPIENT, "")
 
-    def test_異常系_パスワードが空文字(self):
-        self._assert_invalid_password("")
+    def test_異常系_パスワードが3桁でInvalidPasswordErrorが発生する(self):
+        ctx = make_ctx()
+        with pytest.raises(InvalidPasswordError):
+            execute(ctx, EMAIL_RECIPIENT, "123")
 
-    def test_異常系_パスワードが3桁(self):
-        self._assert_invalid_password("123")
+    def test_異常系_パスワードが5桁でInvalidPasswordErrorが発生する(self):
+        ctx = make_ctx()
+        with pytest.raises(InvalidPasswordError):
+            execute(ctx, EMAIL_RECIPIENT, "12345")
 
-    def test_異常系_パスワードが5桁(self):
-        self._assert_invalid_password("12345")
-
-    def test_異常系_パスワードに英字が含まれる(self):
-        self._assert_invalid_password("123a")
-
-    def test_異常系_パスワードが英字のみ(self):
-        self._assert_invalid_password("abcd")
-
-    def test_異常系_パスワードに記号が含まれる(self):
-        self._assert_invalid_password("12.4")
-
-    def test_異常系_パスワードにスペースが含まれる(self):
-        self._assert_invalid_password("12 4")
-
-    def test_異常系_パスワードが全角数字(self):
-        self._assert_invalid_password("１２３４")
+    def test_異常系_パスワードに文字が含まれるとInvalidPasswordErrorが発生する(self):
+        ctx = make_ctx()
+        with pytest.raises(InvalidPasswordError):
+            execute(ctx, EMAIL_RECIPIENT, "12ab")

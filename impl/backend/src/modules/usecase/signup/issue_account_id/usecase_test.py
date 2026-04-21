@@ -1,5 +1,5 @@
 """
-pytest -s -vv impl/backend/src/modules/usecase/issue_account_id/usecase_test.py
+pytest -s -vv impl/backend/src/modules/usecase/signup/issue_account_id/usecase_test.py
 """
 import os
 import time
@@ -134,11 +134,11 @@ def past_ttl() -> int:
 # ─────────────────────────────────────────────
 
 """
-pytest -s -vv impl/backend/src/modules/usecase/issue_account_id/usecase_test.py::TestExecuteSuccess
+pytest -s -vv impl/backend/src/modules/usecase/signup/issue_account_id/usecase_test.py::TestExecuteSuccess
 """
 class TestExecuteSuccess:
 
-    # pytest -s -vv impl/backend/src/modules/usecase/issue_account_id/usecase_test.py::TestExecuteSuccess::test_正常系_戻り値にaccount_idが含まれる
+    # pytest -s -vv impl/backend/src/modules/usecase/signup/issue_account_id/usecase_test.py::TestExecuteSuccess::test_正常系_戻り値にaccount_idが含まれる
     def test_正常系_戻り値にaccount_idが含まれる(self):
         ctx = make_ctx()
         password = "1234"
@@ -241,7 +241,7 @@ class TestExecuteSuccess:
 # ─────────────────────────────────────────────
 
 """
-pytest -s -vv impl/backend/src/modules/usecase/issue_account_id/usecase_test.py::TestInvalidToken
+pytest -s -vv impl/backend/src/modules/usecase/signup/issue_account_id/usecase_test.py::TestInvalidToken
 """
 class TestInvalidToken:
 
@@ -257,7 +257,7 @@ class TestInvalidToken:
 # ─────────────────────────────────────────────
 
 """
-pytest -s -vv impl/backend/src/modules/usecase/issue_account_id/usecase_test.py::TestTooManyAttempts
+pytest -s -vv impl/backend/src/modules/usecase/signup/issue_account_id/usecase_test.py::TestTooManyAttempts
 """
 class TestTooManyAttempts:
 
@@ -285,7 +285,7 @@ class TestTooManyAttempts:
 # ─────────────────────────────────────────────
 
 """
-pytest -s -vv impl/backend/src/modules/usecase/issue_account_id/usecase_test.py::TestTokenExpired
+pytest -s -vv impl/backend/src/modules/usecase/signup/issue_account_id/usecase_test.py::TestTokenExpired
 """
 class TestTokenExpired:
 
@@ -304,7 +304,7 @@ class TestTokenExpired:
 # ─────────────────────────────────────────────
 
 """
-pytest -s -vv impl/backend/src/modules/usecase/issue_account_id/usecase_test.py::TestInvalidPassword
+pytest -s -vv impl/backend/src/modules/usecase/signup/issue_account_id/usecase_test.py::TestInvalidPassword
 """
 class TestInvalidPassword:
 

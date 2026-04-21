@@ -2,7 +2,7 @@ import time
 import traceback
 
 from src.modules.application.application import ApplicationContext
-from src.modules.helper.helper import unixtime_ms, uuid_hex, hash_string, verify_hash
+from src.modules.helper.helper import unixtime_ms, uuid_hex, verify_hash
 from impl.backend.src.modules.usecase.signup.issue_account_id.model import (
     InvalidTokenError,
     TooManyAttemptsError,
@@ -76,7 +76,6 @@ def verify_and_create_account_data(
     now_ms = unixtime_ms()
     account_id = f"aid.{now_ms}.{uuid_hex()}.{uuid_hex()}"
     instance_id = f"iid.{now_ms}.{uuid_hex()}"
-    email_hash = hash_string(stored.email.encode("utf-8"))
     expiry_utms = now_ms + cfg.INITIAL_EXTENSION_UTMS
     reverify_due_utms = now_ms + cfg.REVERIFY_INTERVAL_UTMS
     ttl_expire_at = int(now_ms / 1000) + int(cfg.LIFE_TIME_UTMS / 1000)
@@ -85,7 +84,6 @@ def verify_and_create_account_data(
         account_id=account_id,
         instance_id=instance_id,
         email=stored.email,
-        email_hash=email_hash,
         create_utms=now_ms,
         billing_utms=now_ms,
         expiry_utms=expiry_utms,

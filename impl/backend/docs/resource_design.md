@@ -6,7 +6,7 @@
   - Fields
     - account_id: hash_key, string, "aid.{unixtime(ms)}.{uuid4}.{uuid4}"
     - instance_id: string
-    - email_hash: string
+    - email: string
     - create_utms: int
     - billing_utms: int, 課金開始日時、初期値はcreate_utmsと同じ値を設定する
     - expiry_utms: int, 7日後などの有効期限
@@ -37,8 +37,8 @@
     - password_hash: string
     - attempts: int, default: 0, 3回間違えたら検証拒否
     - create_utms: int
-    - expiry_utms: int, 30分後などの有効期限
-    - ttl_expire_at: int, DynamoDBのTTL機能で自動削除するためのフィールド。UNIXTIME(秒) 、 create_utms + 12時間
+    - expiry_utms: int, 1時間後などの有効期限、create_utms + Config.VTOKEN_LIFETIME_UTMS
+    - ttl_expire_at: int, DynamoDBのTTL機能で自動削除するためのフィールド。UNIXTIME(秒) , expiry_utms / 1000 として設定する
   - Relations
   - _
   - Note: あるアカウントに対する検証トークン。マジックリンク等で検証する際に使用する

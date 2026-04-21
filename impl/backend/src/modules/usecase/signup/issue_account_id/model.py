@@ -36,7 +36,6 @@ class IssuedAccountData:
     account_id: str
     instance_id: str
     email: str
-    email_hash: str
     create_utms: int
     billing_utms: int
     expiry_utms: int

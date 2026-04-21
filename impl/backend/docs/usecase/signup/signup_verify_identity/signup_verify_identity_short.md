@@ -1,0 +1,38 @@
+
+- signup_verify_identity
+- 作業フォルダ: impl/backend/src/modules/usecase/signup/signup_verify_identity
+- メールアドレスとパスワード（数値4桁）のハッシュを保存、トークンを発行してマジックリンク付きメールを送信する
+- リソース定義ファイル: impl/backend/docs/resource_design.md
+- 設定: impl/backend/src/modules/config/config.py
+- 実装指定: usecase.py の execute 関数を実行ハンドラとする
+- import 文は src.modules. から始まる形で記載する
+- 共通機能指定
+  - ctx: ApplicationContext を引数に取る, impl/backend/src/modules/application/application.py
+  - ログは ctx.info, ctx.warning, ctx.error を使用
+  - 設定値は ctx.config を参照
+  - helper.py の機能を使える所では使う, impl/backend/src/modules/helper/helper.py
+- 処理指定
+  - special-instruction
+    - utms は UNIXTIME(ミリ秒) である、ttl_expire_at だけはDynamoDBの仕様上 UNIXTIME(秒) で設定する
+    - メール送信はGMAIL SMTPを使用する、設定値は ctx.config から取得
+  - input
+    - email: string, required
+    - password: string, required, 4桁の数字
+  - workflow
+    - generate verify_token: "vtoken.{unixtime(ms)}.{uuid4}"
+    - generate ddbVerifyToken.expiry_utms: create_utms + Config.VTOKEN_LIFETIME_UTMS
+    - generate ddbVerifyToken.ttl_expire_at: int(ddbVerifyToken.expiry_utms / 1000)
+  - output
+    - ddbVerifyToken に保存
+    - マジックリンク付きメール送信
+      - 送信先: 入力メールアドレス
+      - タイトル: "【AlkNote】本人確認のお願い"
+      - 本文: "以下のURLをクリックして本人確認を完了してください。\n\nhttps://example.com/verify?vtoken={verify_token}\n\nこのURLは１時間有効です。"
+  - exception
+    - InvalidEmailError: emailの形式が不正な場合に発生
+    - InvalidPasswordError: passwordの形式が不正な場合に発生
+    - DatabaseError: データベースエラーが発生した場合に発生
+    - EmailSendError: メール送信に失敗した場合に発生
+  - result
+    - 成功: ddbVerifyToken に保存した値を全て返却、セキュアコーディングは意識しなくて良い、全部返す
+    - 失敗: 例外を発生

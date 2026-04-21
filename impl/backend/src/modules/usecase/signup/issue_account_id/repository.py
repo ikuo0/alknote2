@@ -45,7 +45,7 @@ def save_account(ctx: ApplicationContext, data: IssuedAccountData) -> None:
         Item={
             "account_id": {"S": data.account_id},
             "instance_id": {"S": data.instance_id},
-            "email_hash": {"S": data.email_hash},
+            "email": {"S": data.email},
             "create_utms": {"N": str(data.create_utms)},
             "billing_utms": {"N": str(data.billing_utms)},
             "expiry_utms": {"N": str(data.expiry_utms)},
