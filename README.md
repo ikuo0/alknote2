@@ -6,6 +6,12 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+# git
+```bash
+# git config --global credential.helper "cache --timeout=3600"
+git remote set-url origin git@github.com:ikuo0/alknote2.git
+```
+
 # setup backend environ
 
 setup_local_env.sh サンプル

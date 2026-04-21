@@ -56,3 +56,11 @@
     - this.instance_id -> ddbInstance.instance_id
   - Note: あるインスタンスに対するアクセス権限を管理するトークン
 
+- enumPermissions
+  - Type: Enum
+  - Values
+    - "owner": 投稿に関する全ての権限、トークン発行等全ての権限を持つ
+    - "manager": 投稿に関する全ての権限、トークン発行権限を持つ（editor, viewer を増やせる1）
+    - "editor": 投稿に関する全ての権限
+    - "viewer": 閲覧のみ
+  - Note: アクセストークンの権限を定義する列
