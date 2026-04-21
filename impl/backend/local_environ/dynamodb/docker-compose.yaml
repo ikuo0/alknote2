@@ -1,0 +1,21 @@
+services:
+  dynamodb-local:
+    user: root
+    image: "amazon/dynamodb-local:latest"
+    container_name: dynamodb-local
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./docker/dynamodb:/home/dynamodblocal/data"
+    working_dir: /home/dynamodblocal
+
+  dynamodb-admin:
+    image: "aaronshaf/dynamodb-admin"
+    ports:
+      - "8001:8001"
+    environment:
+      # コンテナ間通信はサービス名を使用
+      DYNAMO_ENDPOINT: "http://dynamodb-local:8000"
+    depends_on:
+      - dynamodb-local

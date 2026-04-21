@@ -11,5 +11,12 @@
       ]
     }
   },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "moby": false,
+      "installDockerBuildx": true,
+      "installDockerComposeSwitch": true
+    }
+  },
   "postCreateCommand": "python -m pip install -r requirements.txt"
 }
