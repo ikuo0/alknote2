@@ -10,6 +10,10 @@ pip install -r requirements.txt
 ```bash
 # git config --global credential.helper "cache --timeout=3600"
 git remote set-url origin git@github.com:ikuo0/alknote2.git
+
+# ssh-agent の起動と秘密鍵の追加、パスワード入力を不要にする
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
 ```
 
 # setup backend environ
