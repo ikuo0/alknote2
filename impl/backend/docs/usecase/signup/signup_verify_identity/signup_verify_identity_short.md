@@ -1,13 +1,13 @@
 
 - signup_verify_identity
+- 概要: メールアドレスとパスワード（数値4桁）のハッシュを保存、トークンを発行してマジックリンク付きメールを送信する
 - 作業フォルダ: impl/backend/src/modules/usecase/signup/signup_verify_identity
-- メールアドレスとパスワード（数値4桁）のハッシュを保存、トークンを発行してマジックリンク付きメールを送信する
 - リソース定義ファイル: impl/backend/docs/resource_design.md
 - 設定: impl/backend/src/modules/config/config.py
-- 実装指定: usecase.py の execute 関数を実行ハンドラとする
+- 実行ハンドラ: usecase.py の execute 関数を実行ハンドラとする
 - import 文は src.modules. から始まる形で記載する
 - 共通機能指定
-  - ctx: ApplicationContext を引数に取る, impl/backend/src/modules/application/application.py
+  - execute 関数は ctx: ApplicationContext を引数に取る, impl/backend/src/modules/application/application.py
   - ログは ctx.info, ctx.warning, ctx.error を使用
   - 設定値は ctx.config を参照
   - helper.py の機能を使える所では使う, impl/backend/src/modules/helper/helper.py
